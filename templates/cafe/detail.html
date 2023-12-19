@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %} {{ cafe.name }} {% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+  <div class="col-10 col-sm-8 col-md-4 col-lg-3">
+    <img class="img-fluid mb-5" src="{{ cafe.image_url }}">
+  </div>
+
+  <div class="col-12 col-sm-10 col-md-8">
+
+    <h1>{{ cafe.name }}</h1>
+
+    <p class="lead">{{ cafe.description }}</p>
+
+    <p><a href="{{ cafe.url }}">{{ cafe.url }}</a></p>
+
+    <p>
+      {{ cafe.address }}<br>
+      {{ cafe.get_city_state() }}<br>
+    </p>
+
+    <p>
+      <a class="btn btn-outline-primary" href="/cafes/{{ cafe.id }}/edit">
+        Edit Cafe
+      </a>
+    </p>
+
+  </div>
+
+</div>
+{% endblock %}

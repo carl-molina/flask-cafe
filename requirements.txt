@@ -1,0 +1,11 @@
+flask<3
+Werkzeug<3
+flask-wtf
+git+https://github.com/pallets-eco/flask-debugtoolbar
+flask-sqlalchemy
+flask-bcrypt
+requests
+psycopg2-binary
+ipython
+python-dotenv
+packaging

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %} FlaskCafe {% endblock %}
+
+{% block content %}
+
+<div class="homepage">
+  <h1 class="display-1">Flask Cafe</h1>
+  <h3 class="display-5">Where Coffee Dreams Come True.</h3>
+  <a class="mt-5 btn btn-primary" href="/cafes">View Our Cafes</a>
+</div>
+
+<style>
+    body {
+      background: url(/static/images/homepage.jpg) no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    .display-1, .display-5 {
+      color: white;
+      text-shadow: black 3px 3px !important;
+      letter-spacing: 0.05em
+    }
+</style>
+
+{% endblock %}

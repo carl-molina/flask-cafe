@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Cafes{% endblock %}
+
+{% block content %}
+
+<h1 class="mb-4">Cafes</h1>
+
+<div class="row">
+
+  {% for cafe in cafes %}
+
+  <div class="col-6 col-md-4 col-lg-3">
+    <div class="card mb-3">
+      <img class="card-img-top image-fluid" style="height: 10em"
+        src="{{ cafe.image_url }}" alt="{{ cafe.name }}">
+      <div class="card-body">
+        <h5 class="card-title">
+          <a href="/cafes/{{ cafe.id }}">
+            {{ cafe.name }}
+          </a>
+        </h5>
+        <h6 class="card-subtitle mb-2 text-muted">
+          {{ cafe.get_city_state() }}
+        </h6>
+        <p class="card-text">
+          {{ cafe.description }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  {% endfor %}
+
+</div>
+
+<div class="mt-3">
+  <a href="/cafes/add" class="btn btn-outline-primary">Add a Cafe</a>
+</div>
+
+{% endblock %}

@@ -6,6 +6,11 @@
 
 <h1 class="mb-4">Edit CafeName </h1>
 
-<!-- form goes here -->>
+<!-- form goes here -->
+<form action="/cafes/{{ cafe.id }}/edit" method="POST">
+  {% include "_form.html" %}
+  <button class="btn btn-primary" type="submit">Edit Cafe</button>
+</form>
+
 
 {% endblock %}

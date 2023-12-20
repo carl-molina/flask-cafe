@@ -1,5 +1,7 @@
 {{ form.hidden_tag() }}
 
+<input type="hidden" name="location" value="{{ request.url }}">
+
 {% for field in form if field.widget.input_type != 'hidden'%}
 
 <div class='form-group'>

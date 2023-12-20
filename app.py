@@ -2,10 +2,12 @@
 
 import os
 
-from flask import Flask, render_template
+from flask import Flask, render_template, session, flash, redirect, url_for
 from flask_debugtoolbar import DebugToolbarExtension
-
-from models import connect_db, Cafe
+from models import connect_db, db, City, Cafe
+from forms import AddEditCafeForm
+from sqlalchemy.exc import IntegrityError
+from utils import get_cities
 
 
 app = Flask(__name__)
@@ -87,3 +89,68 @@ def cafe_detail(cafe_id):
         'cafe/detail.html',
         cafe=cafe,
     )
+
+
+@app.route('/cafes/add', methods=["GET", "POST"])
+# Quotations for each method was the ^ bug ^.
+def add_new_cafe():
+    """GET: show form for adding a cafe. Form accepts:
+            name: required
+            description: optional
+            url: optional, else must be valid URL
+            address: required
+            city_code: must be drop-down menu of cities in db
+            image_url: optional, else must be valid URL
+
+    POST: handles adding new cafe.
+    """
+
+    form = AddEditCafeForm()
+    form.city_code.choices = get_cities()
+
+    if form.validate_on_submit():
+        data = {k: v for k, v in form.data.items() if k != "csrf_token"}
+        new_cafe = Cafe(**data)
+
+        db.session.add(new_cafe)
+
+        try:
+            db.session.commit()
+
+        except IntegrityError:
+            flash("Could not add cafe to database.")
+            return render_template('/cafe/add-form.html', form=form)
+
+        flash(f'{new_cafe.name} added.')
+        return redirect(url_for('cafe_detail', cafe_id=new_cafe.id))
+
+    else:
+        return render_template('/cafe/add-form.html', form=form)
+
+
+@app.route('/cafes/<int:cafe_id>/edit', methods=["GET", "POST"])
+def edit_cafe(cafe_id):
+    """GET: show form for editing cafe. Form fields same as adding new cafe.
+    POST: handles editing cafe.
+    """
+
+    cafe = Cafe.query.get_or_404(cafe_id)
+
+    form = AddEditCafeForm(obj=cafe)
+    form.city_code.choices = get_cities()
+
+    if form.validate_on_submit():
+        form.populate_obj(cafe)
+
+        try:
+            db.session.commit()
+
+        except IntegrityError:
+            flash("Could not save changes.")
+            return render_template('/cafe/edit-form.html', form=form, cafe=cafe)
+
+        flash(f'{cafe.name} edited.')
+        return redirect(url_for('cafe_detail', cafe_id=cafe_id))
+
+    else:
+        return render_template('/cafe/edit-form.html', form=form, cafe=cafe)

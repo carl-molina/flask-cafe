@@ -7,5 +7,10 @@
 <h1 class="mb-4">Add Cafe</h1>
 
 <!-- form goes here -->
+<form action="/cafes/add" method="POST">
+  {% include "_form.html" %}
+  <button class="btn btn-primary" type="submit">Add Cafe</button>
+</form>
+
 
 {% endblock %}

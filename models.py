@@ -1,15 +1,14 @@
 """Data models for Flask Cafe"""
 
-
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
-
 
 bcrypt = Bcrypt()
 db = SQLAlchemy()
 
 DEFAULT_PROFILE_IMG = '/static/images/default-pic.png'
 DEFAULT_CAFE_IMG = '/static/images/default-cafe.jpg'
+
 
 class City(db.Model):
     """Cities for cafes."""
@@ -30,6 +29,9 @@ class City(db.Model):
         db.String(2),
         nullable=False,
     )
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} code={self.code} name={self.name}>"
 
 
 class Cafe(db.Model):
@@ -77,14 +79,14 @@ class Cafe(db.Model):
 
     city = db.relationship("City", backref='cafes')
 
-    def __repr__(self):
-        return f'<Cafe id={self.id} name="{self.name}">'
-
     def get_city_state(self):
         """Return 'city, state' for cafe."""
 
         city = self.city
         return f'{city.name}, {city.state}'
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} id={self.id} name={self.name}>"
 
 
 class User(db.Model):
@@ -142,9 +144,6 @@ class User(db.Model):
         nullable=False,
     )
 
-    def __repr__(self):
-        return f'<User id={self.id} Username="{self.username}">'
-
     @property
     def full_name(self):
         """Return a string of 'first_name last_name'."""
@@ -196,6 +195,41 @@ class User(db.Model):
                 return user
 
         return False
+
+    liked_cafes = db.relationship(
+        "Cafe", secondary="likes", backref="liking_users"
+    )
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} id={self.id} name={self.username}>"
+
+
+class Like(db.Model):
+    """Tracks which user likes which cafe."""
+
+    __tablename__ = "likes"
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "cafe_id"),
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id'),
+        primary_key=True,
+    )
+
+    cafe_id = db.Column(
+        db.Integer,
+        db.ForeignKey('cafes.id'),
+        primary_key=True,
+    )
+
+    def __repr__(self):
+        return (
+            f"<{self.__class__.__name__} " +
+            f"user={self.user_id} cafe={self.cafe_id}>"
+        )
 
 
 def connect_db(app):

@@ -271,7 +271,6 @@ class CafeAdminViewsTestCase(TestCase):
 
             self.assertIn(b'added', resp.data)
             self.assertEqual(resp.status_code, 200)
-            # TODO: view fn needs to return 201 after adding cafe
 
     def test_add_form_get_cities(self):
         """Tests to check proper cities are in SelectField in add/edit form."""
@@ -281,7 +280,7 @@ class CafeAdminViewsTestCase(TestCase):
 
             self.assertIn(b'San Francisco', resp.data)
 
-    # TODO: a neat regex way to test for the drop-down menu in SelectField!
+    # a neat regex way to test for the drop-down menu in SelectField!
     def test_dynamic_cities_vocab(self):
         id = self.cafe_id
 
@@ -387,7 +386,7 @@ class AuthViewsTestCase(TestCase):
 
         user = User.register(**TEST_USER_DATA)
         # db.session.add(user)
-        # TODO: ^ don't have this here! The register class method already adds
+        # ^ don't have this here! The register class method already adds
         # the new user to the database within the fn. This was the bug!!
 
         db.session.commit()
@@ -398,7 +397,7 @@ class AuthViewsTestCase(TestCase):
         """After each test, remove all users."""
 
         db.session.rollback()
-        # TODO: ^ use db.session.rollback() when you force PendingRollbackErrors
+        # ^ use db.session.rollback() when you force PendingRollbackErrors
         # like when trying to create a new user when that username already
         # exists in the db.
 
@@ -531,44 +530,100 @@ class NavBarTestCase(TestCase):
             self.assertNotIn(b'Log In', resp.data)
 
 
-# class ProfileViewsTestCase(TestCase):
-#     """Tests for views on user profiles."""
+class ProfileViewsTestCase(TestCase):
+    """Tests for views on user profiles."""
 
-#     def setUp(self):
-#         """Before each test, add sample user."""
+    def setUp(self):
+        """Before each test, add sample user."""
 
-#         User.query.delete()
+        User.query.delete()
 
-#         user = User.register(**TEST_USER_DATA)
+        user = User.register(**TEST_USER_DATA)
 
-#         db.session.commit()
+        db.session.commit()
 
-#         self.user_id = user.id
+        self.user_id = user.id
 
-#     def tearDown(self):
-#         """After each test, remove all users."""
+    def tearDown(self):
+        """After each test, remove all users."""
 
-#         User.query.delete()
-#         db.session.commit()
+        User.query.delete()
+        db.session.commit()
 
-#     def test_anon_profile(self):
-#         self.fail("FIXME: write this test")
+    def test_anon_profile(self):
+        """Tests for a non-logged in user trying to enter profile detail."""
 
-#     def test_logged_in_profile(self):
-#         self.fail("FIXME: write this test")
+        with app.test_client() as client:
+            resp = client.get('/profile', follow_redirects=True)
 
-#     def test_anon_profile_edit(self):
-#         self.fail("FIXME: write this test")
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn(b'You are not logged in', resp.data)
+            self.assertIn(b'Login', resp.data)
 
-#     def test_logged_in_profile_edit(self):
-#         self.fail("FIXME: write this test")
+    def test_logged_in_profile(self):
+        """Tests for logged in user trying to enter profile detail."""
+
+        with app.test_client() as client:
+            login_for_test(client, self.user_id)
+
+            resp = client.get('/profile')
+
+            user = User.query.get_or_404(self.user_id)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn(user.full_name, str(resp.data))
 
 
-#######################################
-# likes
+    def test_anon_profile_edit(self):
+        """Tests for non-logged in user trying to edit profile."""
+
+        with app.test_client() as client:
+            resp = client.get('/profile/edit', follow_redirects=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn(b'You are not logged in', resp.data)
+            self.assertIn(b'Login', resp.data)
+
+            resp = client.post(
+                '/profile/edit',
+                data=TEST_USER_DATA_EDIT,
+                follow_redirects=True,
+            )
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn(b'You are not logged in', resp.data)
+            self.assertIn(b'Login', resp.data)
+
+    def test_logged_in_profile_edit(self):
+        """Tests for logged-in user trying to edit profile."""
+
+        with app.test_client() as client:
+            login_for_test(client, self.user_id)
+
+            resp = client.get('/profile/edit')
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn(b'Edit Profile', resp.data)
+            self.assertIn(b'Testy', resp.data)
+
+            resp = client.post(
+                '/profile/edit',
+                data=TEST_USER_DATA_EDIT,
+                follow_redirects=True,
+            )
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn(b'Profile edited.', resp.data)
+            self.assertIn(b'new-fn', resp.data)
+            self.assertIn(b'new-description', resp.data)
+
+
+# #######################################
+# # likes
 
 
 class LikeViewsTestCase(TestCase):
     """Tests for views on cafes."""
 
     # FIXME: add setup/teardown/inidividual tests
+    # TODO: this is where you stopped for the night!

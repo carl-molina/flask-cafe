@@ -7,7 +7,9 @@ from flask import (
 )
 from flask_debugtoolbar import DebugToolbarExtension
 from models import connect_db, db, City, Cafe, User
-from forms import AddEditCafeForm, CSRFProtection, SignupForm, LoginForm
+from forms import (
+    AddEditCafeForm, CSRFProtection, SignupForm, LoginForm, ProfileEditForm
+)
 from sqlalchemy.exc import IntegrityError
 from utils import get_cities
 
@@ -160,22 +162,48 @@ def logout():
 # general user routes
 
 
-@app.get('/profile/<int:user_id>')
-def show_profile(user_id):
+@app.get('/profile')
+def show_profile():
     """Shows user profile."""
 
     if not g.user:
         # if not logged in, you shouldn't be able to view a user's profile
-        flash('Access unauthorized', 'danger')
-        return redirect(url_for('homepage'))
+        flash(NOT_LOGGED_IN_MSG, 'danger')
+        return redirect(url_for('login'))
 
-    user = User.query.get_or_404(user_id)
-
-    return render_template('/profile/detail.html', user=user)
-
-# TODO: left off here! Refer to detail.html (right side)
+    return render_template('/profile/detail.html', user=g.user)
 
 
+@app.route('/profile/edit', methods=['GET', 'POST'])
+def edit_profile():
+    """Edit current user profile.
+    GET: show profile edit form.
+    POST: process profile edit. Redirects to profile page.
+    """
+
+    if not g.user:
+        flash(NOT_LOGGED_IN_MSG, 'danger')
+        return redirect(url_for('login'))
+
+    form = ProfileEditForm(obj=g.user)
+
+    if form.validate_on_submit():
+        if not form.image_url.data:
+            form.image_url.data = User.image_url.default.arg
+
+        form.populate_obj(g.user)
+
+        try:
+            db.session.commit()
+
+        except IntegrityError:
+            flash("Update failed.")
+            return render_template('/profile/edit-form.html', form=form)
+
+        flash("Profile edited.")
+        return redirect(url_for('show_profile'))
+
+    return render_template('/profile/edit-form.html', form=form)
 
 
 #######################################
@@ -264,6 +292,9 @@ def edit_cafe(cafe_id):
     form.city_code.choices = get_cities()
 
     if form.validate_on_submit():
+        if not form.image_url.data:
+            form.image_url.data = Cafe.image_url.default.arg
+
         form.populate_obj(cafe)
 
         try:

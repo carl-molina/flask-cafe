@@ -1,6 +1,6 @@
 """Initial data."""
 
-from models import City, Cafe, db  # , User
+from models import City, Cafe, db, User
 
 from app import app
 
@@ -49,27 +49,27 @@ db.session.commit()
 #######################################
 # add users
 
-# ua = User.register(
-#     username="admin",
-#     first_name="Addie",
-#     last_name="MacAdmin",
-#     description="I am the very model of the modern model administrator.",
-#     email="admin@test.com",
-#     password="secret",
-#     admin=True,
-# )
+ua = User.register(
+    username="admin",
+    first_name="Addie",
+    last_name="MacAdmin",
+    description="I am the very model of the modern model administrator.",
+    email="admin@test.com",
+    password="secret",
+    admin=True,
+)
 
-# u1 = User.register(
-#     username="test",
-#     first_name="Testy",
-#     last_name="MacTest",
-#     description="I am the ultimate representative user.",
-#     email="test@test.com",
-#     password="secret",
-# )
+u1 = User.register(
+    username="test",
+    first_name="Testy",
+    last_name="MacTest",
+    description="I am the ultimate representative user.",
+    email="test@test.com",
+    password="secret",
+)
 
-# db.session.add_all([u1])
-# db.session.commit()
+db.session.add_all([u1])
+db.session.commit()
 
 
 #######################################

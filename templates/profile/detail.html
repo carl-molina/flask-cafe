@@ -1,25 +1,25 @@
 
 {% extends 'base.html' %}
 
-{% block title %} FULL NAME {% endblock %}
+{% block title %} {{ user.full_name }} {% endblock %}
 
 {% block content %}
 
 <div class="row justify-content-center">
 
   <div class="col-4 col-sm-4 col-md-4 col-lg-3">
-    <img class="img-fluid mb-5" src="FIXME">
+    <img class="img-fluid mb-5" src="{{ user.image_url }}">
   </div>
 
   <div class="col-12 col-sm-10 col-md-8">
-    <h1>FULL NAME</h1>
-    <p class="lead"> DESCRIPTION </p>
+    <h1>{{ user.full_name }}</h1>
+    <p class="lead"> {{ user.description }} </p>
 
-    <p><b>Username:</b> USERNAME </p>
-    <p><b>Email:</b> EMAIL </p>
+    <p><b>Username:</b> {{ user.username }} </p>
+    <p><b>Email:</b> {{ user.email }} </p>
 
     <p>
-      <a class="btn btn-outline-primary" href="FIXME">
+      <a class="btn btn-outline-primary" href="/profile/edit">
         Edit Your Profile
       </a>
     </p>
@@ -29,3 +29,5 @@
 </div>
 
 {% endblock %}
+
+<!-- TODO: left off here! I passed in user=user, so fill in the blanks! -->

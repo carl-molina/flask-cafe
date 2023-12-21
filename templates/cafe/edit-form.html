@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 
-{% block title %} Edit CafeName {% endblock %}
+{% block title %} Edit {{ cafe.name }} {% endblock %}
 
 {% block content %}
 
-<h1 class="mb-4">Edit CafeName </h1>
+<h1 class="mb-4">Edit {{ cafe.name }} </h1>
 
 <!-- form goes here -->
 <form action="/cafes/{{ cafe.id }}/edit" method="POST">

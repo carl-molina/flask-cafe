@@ -29,23 +29,25 @@
         <li class="nav-item"><a class="nav-link" href="/cafes">Cafes</a></li>
       </ul>
       <ul class="navbar-nav ml-auto">
-        <li class="nav-item">
-          <!-- show when no one is logged in
-          <a href="XXX" class="btn-sm btn btn-outline-light">Sign Up</a>
-          <a href="XXX" class="btn-sm btn btn-outline-light">Log In</a>
-          -->
 
-          <!-- show when someone is logged in
-          <a href="/profile" class="nav-link">FULL NAME</a>
-          -->
+        {% if not g.user %}
+        <li class="nav-item">
+          <!-- show when no one is logged in -->
+          <a href="/signup" class="btn-sm btn btn-outline-light">Sign Up</a>
+          <a href="/login" class="btn-sm btn btn-outline-light">Log In</a>
+        {% else %}
+          <!-- show when someone is logged in -->
+          <a href="/profile/{{ g.user.id }}" class="nav-link">{{ g.user.full_name }}</a>
+
         </li>
       </ul>
 
-      <!-- show when someone is logged in
-      <form class="form-inline my-2 my-lg-0">
+      <!-- show when someone is logged in -->
+      <form action="/logout" method="POST" class="form-inline my-2 my-lg-0">
+        {{ g.csrf_form.hidden_tag() }}
         <button class="btn-sm btn btn-outline-light">Log Out</button>
       </form>
-      -->
+        {% endif %}
 
     </div>
   </nav>

@@ -12,7 +12,26 @@
 
   <div class="col-12 col-sm-10 col-md-8">
 
-    <h1>{{ cafe.name }}</h1>
+    <div class="d-flex align-items-center mb-2">
+      <h1 class="mr-0">{{ cafe.name }}</h1>
+
+      <div id="like-area">
+
+        {% if g.user %}
+        <form id="cafe-like-form" method="POST">
+          {{ g.csrf_form.hidden_tag() }}
+          <input type="hidden" id="cafe-id" name="cafe-id" value="{{ cafe.id }}">
+          <button type="button" id="like" class="btn btn-link">
+            <i class="bi bi-heart"></i>
+          </button>
+            <button type="button" id="unlike" class="btn btn-link">
+              <i class="bi bi-heart-fill"></i>
+            </button>
+        </form>
+        {% endif %}
+
+      </div>
+    </div>
 
     <p class="lead">{{ cafe.description }}</p>
 
@@ -32,4 +51,8 @@
   </div>
 
 </div>
+
+<!-- Apply only like/unlike functionality on cafe detail page. -->
+<script src="/static/js/cafe.js"></script>
+
 {% endblock %}

@@ -72,6 +72,15 @@ CAFE_DATA_EDIT = dict(
     image_url="http://new-image.com/"
 )
 
+CAFE_DATA_NEW = dict(
+    name="New Cafe 2",
+    description="Test description 2",
+    url="http://testcafe.com/",
+    address="500 New St",
+    city_code="sf",
+    image_url="http://testcafeimg.com/"
+)
+
 TEST_USER_DATA = dict(
     username="test",
     first_name="Testy",
@@ -405,6 +414,8 @@ class AuthViewsTestCase(TestCase):
         db.session.commit()
 
     def test_signup(self):
+        """Tests for successful user signup."""
+
         with app.test_client() as client:
             resp = client.get("/signup")
             self.assertIn(b'Sign Up', resp.data)
@@ -419,6 +430,8 @@ class AuthViewsTestCase(TestCase):
             self.assertTrue(session.get(CURR_USER_KEY))
 
     def test_signup_username_taken(self):
+        """Tests for invalid signup (username already taken)."""
+
         with app.test_client() as client:
             resp = client.get("/signup")
             self.assertIn(b'Sign Up', resp.data)
@@ -433,6 +446,8 @@ class AuthViewsTestCase(TestCase):
             self.assertIn(b"Username already taken", resp.data)
 
     def test_login(self):
+        """Tests for user login."""
+
         with app.test_client() as client:
             resp = client.get("/login")
             self.assertIn(b'Welcome Back!', resp.data)
@@ -455,6 +470,8 @@ class AuthViewsTestCase(TestCase):
             self.assertEqual(session.get(CURR_USER_KEY), self.user_id)
 
     def test_logout(self):
+        """Tests for user logout."""
+
         with app.test_client() as client:
             login_for_test(client, self.user_id)
             resp = client.post("/logout", follow_redirects=True)
@@ -625,5 +642,146 @@ class ProfileViewsTestCase(TestCase):
 class LikeViewsTestCase(TestCase):
     """Tests for views on cafes."""
 
-    # FIXME: add setup/teardown/inidividual tests
-    # TODO: this is where you stopped for the night!
+    def setUp(self):
+        """Before each test, add sample user and sample cafe for likes."""
+
+        User.query.delete()
+        Cafe.query.delete()
+        City.query.delete()
+
+        user1 = User.register(**TEST_USER_DATA)
+        user2 = User.register(**TEST_USER_DATA_NEW)
+        city = City(**CITY_DATA)
+        cafe = Cafe(**CAFE_DATA)
+        cafe2 = Cafe(**CAFE_DATA_NEW)
+
+        db.session.add_all([city, cafe, cafe2])
+        db.session.commit()
+
+        self.user1_id = user1.id
+        self.user2_id = user2.id
+        self.city_code = city.code
+        self.cafe_id = cafe.id
+        self.cafe2_id = cafe2.id
+
+        user1.liked_cafes.append(cafe)
+
+    def tearDown(self):
+        """After each test, remove liked_cafes and delete users and cafes."""
+
+        db.session.rollback()
+
+        user = User.query.get_or_404(self.user1_id)
+        # cafe = Cafe.query.get_or_404(self.cafe_id)
+        # city = City.query.get_or_404(self.city_code)
+
+        user.liked_cafes.clear()
+
+        User.query.delete()
+        Cafe.query.delete()
+        City.query.delete()
+        db.session.commit()
+
+    def test_likes_on_profile(self):
+        """Tests for a user having a liked cafe on their profile page."""
+
+        with app.test_client() as client:
+            login_for_test(client, self.user1_id)
+
+            resp = client.get('/profile')
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn(b'You like Test Cafe', resp.data)
+            self.assertNotIn(b'You have no liked cafes!', resp.data)
+
+    def test_no_likes_on_profile(self):
+        """Tests for a user having no liked cafes on their profile page."""
+
+        with app.test_client() as client:
+            login_for_test(client, self.user2_id)
+
+            resp = client.get('/profile')
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn(b'You have no liked cafes!', resp.data)
+            self.assertNotIn(b'You like ', resp.data)
+
+    def test_anon_api_likes(self):
+        """Tests for non-logged in user when using IIFE processLikes."""
+
+        with app.test_client() as client:
+            resp = client.get(f'/api/likes?cafe_id={self.cafe2_id}')
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.json, {"error": "Not logged in"})
+
+    def test_logged_in_api_likes(self):
+        """Tests for logged in user when using IIFE processLikes."""
+
+        with app.test_client() as client:
+            login_for_test(client, self.user1_id)
+
+            resp = client.get(f'/api/likes?cafe_id={self.cafe2_id}')
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.json, {"likes": False})
+
+    def test_anon_handle_like(self):
+        """Tests for non-logged in user liking a cafe."""
+
+        with app.test_client() as client:
+            resp = client.post(
+                '/api/like',
+                json={
+                    "cafe_id": self.cafe2_id
+                }
+            )
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.json, {"error": "Not logged in"})
+
+    def test_user_handle_like(self):
+        """Tests for logged-in user liking a cafe."""
+
+        with app.test_client() as client:
+            login_for_test(client, self.user1_id)
+
+            resp = client.post(
+                '/api/like',
+                json={
+                    "cafe_id": self.cafe2_id
+                }
+            )
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.json, {"liked": self.cafe2_id})
+
+    def test_anon_handle_unlike(self):
+        """Tests for non-logged in user unliking a cafe."""
+
+        with app.test_client() as client:
+            resp = client.post(
+                '/api/unlike',
+                json={
+                    "cafe_id": self.cafe_id
+                }
+            )
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.json, {"error": "Not logged in"})
+
+    def test_user_handle_unlike(self):
+        """Tests for logged-in user liking a cafe."""
+
+        with app.test_client() as client:
+            login_for_test(client, self.user1_id)
+
+            resp = client.post(
+                '/api/unlike',
+                json={
+                    "cafe_id": self.cafe_id
+                }
+            )
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.json, {"unliked": self.cafe_id})

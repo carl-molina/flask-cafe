@@ -2,6 +2,7 @@
 
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
+from mapping import save_map
 
 bcrypt = Bcrypt()
 db = SQLAlchemy()
@@ -80,10 +81,16 @@ class Cafe(db.Model):
     city = db.relationship("City", backref='cafes')
 
     def get_city_state(self):
-        """Return 'city, state' for cafe."""
+        """Returns 'city, state' for cafe."""
 
         city = self.city
         return f'{city.name}, {city.state}'
+
+    def save_map(self):
+        """Saves map jpg file for location of cafe."""
+
+        city = self.city
+        save_map(self.id, self.address, city.name, city.state)
 
     def __repr__(self):
         return f"<{self.__class__.__name__} id={self.id} name={self.name}>"

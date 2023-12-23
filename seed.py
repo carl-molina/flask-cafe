@@ -25,7 +25,7 @@ db.session.commit()
 c1 = Cafe(
     name="Bernie's Cafe",
     description='Serving locals in Noe Valley. A great place to sit and write'
-        ' and write Rithm exercises.',
+    ' and write Rithm exercises.',
     address="3966 24th St",
     city_code='sf',
     url='https://www.yelp.com/biz/bernies-san-francisco',
@@ -35,14 +35,24 @@ c1 = Cafe(
 c2 = Cafe(
     name='Perch Coffee',
     description='Hip and sleek place to get cardamom lattés when biking'
-        ' around Oakland.',
+    ' around Oakland.',
     address='440 Grand Ave',
     city_code='oak',
     url='https://perchoffee.com',
     image_url='https://s3-media4.fl.yelpcdn.com/bphoto/0vhzcgkzIUIEPIyL2rF_YQ/o.jpg',
 )
 
-db.session.add_all([c1, c2])
+c3 = Cafe(
+    name='Andytown Coffee Roasters',
+    description='Cozy, contemporary coffee shop & cafe with an Irish bent'
+    ' serving espresso drinks, pastries & soups.',
+    address='3655 Lawton St',
+    city_code='sf',
+    url='https://www.andytownsf.com/',
+    image_url='https://localwiki.org/media/cache/1d/21/1d21d28fcb73772768d081d838fc223e.jpg',
+)
+
+db.session.add_all([c1, c2, c3])
 db.session.commit()
 
 
@@ -85,7 +95,8 @@ db.session.commit()
 #######################################
 # cafe maps
 
-# c1.save_map()
-# c2.save_map()
-#
-#db.session.commit()
+c1.save_map()
+c2.save_map()
+c3.save_map()
+
+db.session.commit()

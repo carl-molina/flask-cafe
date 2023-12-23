@@ -1,13 +1,23 @@
 import os
+from dotenv import load_dotenv
 import requests
 
-API_KEY = os.environ.get("MAPQUEST_API_KEY")
+load_dotenv()
+
+API_KEY = os.environ['MAPQUEST_API_KEY']
+print('This is API_KEY', API_KEY)
 
 def get_map_url(address, city, state):
     """Get MapQuest URL for a static map for this location."""
 
     base = f"https://www.mapquestapi.com/staticmap/v5/map?key={API_KEY}"
+    print('This is base w/ my MAPQUEST_API_KEY', base)
+
     where = f"{address},{city},{state}"
+
+    print('This is the URL passed to Mapquest API,'
+          f"{base}&center={where}&size=@2x&zoom=15&locations={where}"
+    )
     return f"{base}&center={where}&size=@2x&zoom=15&locations={where}"
 
 
@@ -22,12 +32,16 @@ def save_map(id, address, city, state):
     # "PATH/static/maps/1.jpg"
 
     map_url = get_map_url(address, city, state)
+    print('This is map_url', map_url)
 
     resp = requests.get(map_url)
+    # ^ Sends an HTTP GET request to map_url (Mapquest API endpoint)
     print('This is resp', resp)
     print('This is resp.content', resp.content)
+    # ^ resp.content is the binary content of resp, which should be an img)
 
-    with open()
+    with open(f"{path}/static/maps/{id}.jpg", "wb") as file:
+        file.write(resp.content)
 
 
     # TODO: left off here for the night! Tomorrow:

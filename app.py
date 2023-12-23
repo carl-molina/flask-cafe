@@ -1,23 +1,24 @@
 """Flask App for Flask Cafe."""
 
 import os
+from dotenv import load_dotenv
 
 from flask import (
     Flask, render_template, session, flash, redirect, url_for, g, jsonify, request
 )
 from flask_debugtoolbar import DebugToolbarExtension
-from models import connect_db, db, City, Cafe, User, Like
+from models import connect_db, db, Cafe, User, Like
 from forms import (
     AddEditCafeForm, CSRFProtection, SignupForm, LoginForm, ProfileEditForm
 )
 from sqlalchemy.exc import IntegrityError
 from utils import get_cities
 
+load_dotenv()
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    "DATABASE_URL", 'postgresql:///flask_cafe')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ["DATABASE_URL"]
 app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY", "shhhh")
 app.config['SQLALCHEMY_ECHO'] = True
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
@@ -279,6 +280,7 @@ def add_new_cafe():
             return render_template('/cafe/add-form.html', form=form)
 
         flash(f'{new_cafe.name} added.')
+        new_cafe.save_map()
         return redirect(url_for('cafe_detail', cafe_id=new_cafe.id))
 
     else:

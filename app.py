@@ -248,6 +248,11 @@ def add_new_cafe():
     POST: handles adding new cafe.
     """
 
+    if not g.user or not g.user.admin:
+        flash("Only admins can add/edit cafes.")
+        return redirect(url_for("cafe_list"))
+
+
     form = AddEditCafeForm()
     form.city_code.choices = get_cities()
 
@@ -285,6 +290,10 @@ def edit_cafe(cafe_id):
     """GET: show form for editing cafe. Form fields same as adding new cafe.
     POST: handles editing cafe.
     """
+
+    if not g.user or not g.user.admin:
+        flash("Only admins can add/edit cafes.")
+        return redirect(url_for("cafe_list"))
 
     cafe = Cafe.query.get_or_404(cafe_id)
 

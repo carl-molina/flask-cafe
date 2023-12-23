@@ -109,15 +109,15 @@ TEST_USER_DATA_NEW = dict(
     image_url="http://new-image.com",
 )
 
-# ADMIN_USER_DATA = dict(
-#     username="admin",
-#     first_name="Addie",
-#     last_name="MacAdmin",
-#     description="Admin Description.",
-#     email="admin@test.com",
-#     password="secret",
-#     admin=True,
-# )
+ADMIN_USER_DATA = dict(
+    username="admin",
+    first_name="Addie",
+    last_name="MacAdmin",
+    description="Admin Description.",
+    email="admin@test.com",
+    password="secret",
+    admin=True,
+)
 
 
 #######################################
@@ -263,43 +263,93 @@ class CafeAdminViewsTestCase(TestCase):
 
         City.query.delete()
         Cafe.query.delete()
+        User.query.delete()
 
         sf = City(**CITY_DATA)
         db.session.add(sf)
 
         cafe = Cafe(**CAFE_DATA)
+        user = User.register(**TEST_USER_DATA)
+        admin_user = User.register(**ADMIN_USER_DATA)
+
         db.session.add(cafe)
 
         db.session.commit()
 
         self.cafe_id = cafe.id
+        self.user_id = user.id
+        self.admin_user_id = admin_user.id
 
     def tearDown(self):
         """After each test, delete the cities."""
 
+        db.session.rollback()
+
         Cafe.query.delete()
         City.query.delete()
+        User.query.delete()
         db.session.commit()
 
-    def test_add(self):
-        """Tests to check adding new cafe."""
-        with app.test_client() as client:
-            resp = client.get(f"/cafes/add")
+    def test_add_cafe_non_admin(self):
+        """Tests for validating adding new cafe by non-admin anon."""
 
-            self.assertIn(b'Add Cafe', resp.data)
+        with app.test_client() as client:
+            resp = client.get("/cafes/add", follow_redirects=True)
+
+            self.assertIn(b'Only admins can add/edit cafes.', resp.data)
 
             resp = client.post(
                 f"/cafes/add",
                 data=CAFE_DATA_EDIT,
                 follow_redirects=True)
 
-            self.assertIn(b'added', resp.data)
+            self.assertIn(b'Only admins can add/edit cafes.', resp.data)
             self.assertEqual(resp.status_code, 200)
+
+    def test_add_cafe_non_admin_user(self):
+        """Tests for validating adding new cafe by non-admin user."""
+
+        with app.test_client() as client:
+            login_for_test(client, self.user_id)
+
+            resp = client.get("/cafes/add", follow_redirects=True)
+
+            self.assertIn(b'Only admins can add/edit cafes.', resp.data)
+
+            resp = client.post(
+                f"/cafes/add",
+                data=CAFE_DATA_EDIT,
+                follow_redirects=True)
+
+            self.assertIn(b'Only admins can add/edit cafes.', resp.data)
+            self.assertEqual(resp.status_code, 200)
+
+    def test_add_cafe_admin(self):
+        """Tests for validating adding new cafe by admin user."""
+
+        with app.test_client() as client:
+            login_for_test(client, self.admin_user_id)
+
+            resp = client.get("/cafes/add")
+
+            self.assertIn(b'Add Cafe', resp.data)
+
+            resp = client.post(
+                f"/cafes/add",
+                data=CAFE_DATA_NEW,
+                follow_redirects=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn(b'New Cafe 2 added.', resp.data)
+            self.assertIn(b'Test description 2', resp.data)
+            self.assertIn(b'500 New St', resp.data)
 
     def test_add_form_get_cities(self):
         """Tests to check proper cities are in SelectField in add/edit form."""
 
         with app.test_client() as client:
+            login_for_test(client, self.admin_user_id)
+
             resp = client.get("/cafes/add", follow_redirects=True)
 
             self.assertIn(b'San Francisco', resp.data)
@@ -315,6 +365,7 @@ class CafeAdminViewsTestCase(TestCase):
            r'San Francisco</option></select>')
 
         with app.test_client() as client:
+            login_for_test(client, self.admin_user_id)
             resp = client.get(f"/cafes/add")
             self.assertRegex(resp.data.decode('utf8'), choices_pattern)
 
@@ -322,9 +373,12 @@ class CafeAdminViewsTestCase(TestCase):
             self.assertRegex(resp.data.decode('utf8'), choices_pattern)
 
     def test_edit(self):
+        """Tests for getting and handling edit form."""
         id = self.cafe_id
 
         with app.test_client() as client:
+            login_for_test(client, self.admin_user_id)
+
             resp = client.get(f"/cafes/{id}/edit", follow_redirects=True)
             self.assertIn(b'Edit Test Cafe', resp.data)
 
@@ -332,13 +386,17 @@ class CafeAdminViewsTestCase(TestCase):
                 f"/cafes/{id}/edit",
                 data=CAFE_DATA_EDIT,
                 follow_redirects=True)
-            self.assertIn(b'edited', resp.data)
+
+            self.assertIn(b'new-name edited', resp.data)
+            self.assertIn(b'new-description', resp.data)
 
     def test_edit_form_shows_curr_data(self):
         id = self.cafe_id
 
         with app.test_client() as client:
-            resp = client.get(f"/cafes/{id}/edit", follow_redirects=True)
+            login_for_test(client, self.admin_user_id)
+
+            resp = client.get(f"/cafes/{id}/edit")
             self.assertIn(b'Test description', resp.data)
 
     def test_edit_form_get_cities(self):
@@ -346,11 +404,10 @@ class CafeAdminViewsTestCase(TestCase):
         id = self.cafe_id
 
         with app.test_client() as client:
-            resp = client.get(f"/cafes/{id}/edit", follow_redirects=True)
+            login_for_test(client, self.admin_user_id)
+            resp = client.get(f"/cafes/{id}/edit")
 
             self.assertIn(b'San Francisco', resp.data)
-
-
 
 
 #######################################
@@ -375,6 +432,8 @@ class UserModelTestCase(TestCase):
 
     def tearDown(self):
         """After each test, remove all users."""
+
+        db.session.rollback()
 
         User.query.delete()
         db.session.commit()

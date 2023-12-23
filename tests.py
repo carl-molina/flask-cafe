@@ -10,7 +10,8 @@ from unittest import TestCase
 
 from flask import session
 from app import app, CURR_USER_KEY
-from models import db, Cafe, City, connect_db, User  # Like
+from models import db, Cafe, City, connect_db, User, Like
+from sqlalchemy.exc import IntegrityError
 
 # Make Flask errors be real errors, rather than HTML pages with error info
 app.config['TESTING'] = True
@@ -140,7 +141,7 @@ class CityModelTestCase(TestCase):
     """Tests for City Model."""
 
     def setUp(self):
-        """Before all tests, add sample city & users"""
+        """Before all tests, add sample city & users."""
 
         Cafe.query.delete()
         City.query.delete()
@@ -153,6 +154,7 @@ class CityModelTestCase(TestCase):
 
         db.session.commit()
 
+        self.city_code = sf.code
         self.cafe = cafe
 
     def tearDown(self):
@@ -164,6 +166,15 @@ class CityModelTestCase(TestCase):
 
     # depending on how you solve exercise, you may have things to test on
     # the City model, so here's a good place to put that stuff.
+
+    def test_city_sf(self):
+        """Tests for City Model on sf city instance."""
+
+        city = City.query.get_or_404(self.city_code)
+
+        self.assertEqual('sf', city.code)
+        self.assertEqual('San Francisco', city.name)
+        self.assertEqual('CA', city.state)
 
 
 #######################################
@@ -227,12 +238,16 @@ class CafeViewsTestCase(TestCase):
         db.session.commit()
 
     def test_list(self):
+        """Tests for cafe listings."""
+
         with app.test_client() as client:
             resp = client.get("/cafes")
             self.assertEqual(resp.status_code, 200)
             self.assertIn(b"Test Cafe", resp.data)
 
     def test_detail(self):
+        """Tests for cafe profile/detail."""
+
         with app.test_client() as client:
             resp = client.get(f"/cafes/{self.cafe_id}")
             self.assertEqual(resp.status_code, 200)
@@ -343,7 +358,7 @@ class CafeAdminViewsTestCase(TestCase):
 
 
 class UserModelTestCase(TestCase):
-    """Tests for the user model."""
+    """Tests for User Model."""
 
     def setUp(self):
         """Before each test, add sample users."""
@@ -636,7 +651,58 @@ class ProfileViewsTestCase(TestCase):
 
 
 # #######################################
-# # likes
+# likes
+
+
+class LikeModelTestCase(TestCase):
+    """Tests for Like Model."""
+
+    def setUp(self):
+        """Before each test, add sample user, city, and cafe for likes."""
+
+        User.query.delete()
+        Cafe.query.delete()
+        City.query.delete()
+
+        user1 = User.register(**TEST_USER_DATA)
+        city = City(**CITY_DATA)
+        cafe = Cafe(**CAFE_DATA)
+
+        db.session.add_all([city, cafe])
+        db.session.commit()
+
+        self.user1_id = user1.id
+        self.city_code = city.code
+        self.cafe_id = cafe.id
+
+        like = Like(user_id=self.user1_id, cafe_id=self.cafe_id)
+
+        db.session.add(like)
+        db.session.commit()
+
+    def tearDown(self):
+        """After each test, remove liked_cafes and delete users and cafes."""
+
+        db.session.rollback()
+
+        user = User.query.get_or_404(self.user1_id)
+        # cafe = Cafe.query.get_or_404(self.cafe_id)
+        # city = City.query.get_or_404(self.city_code)
+
+        user.liked_cafes.clear()
+
+        User.query.delete()
+        Cafe.query.delete()
+        City.query.delete()
+        db.session.commit()
+
+    def test_duplicate_like(self):
+        """Tests whether a user already likes a cafe."""
+
+        with self.assertRaises(IntegrityError):
+            like = Like(user_id=self.user1_id, cafe_id=self.cafe_id)
+            db.session.add(like)
+            db.session.commit()
 
 
 class LikeViewsTestCase(TestCase):

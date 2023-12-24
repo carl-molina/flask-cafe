@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %} 404 Not Found {% endblock %}
+
+{% block content %}
+
+<div id="404-error-msg">
+  <div class="col justify-content-center">
+    <!-- elements aligned in a vertical col -->
+    <h1>404</h1>
+    <h3>Not Found</h3>
+    <h5>The resource requested could not be found on this server.</h5>
+    <a href="{{ url_for('homepage') }}">
+      <p>Click here to return to homepage.</p>
+    </a>
+  </div>
+</div>
+
+{% endblock %}

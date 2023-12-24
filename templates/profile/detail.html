@@ -26,11 +26,13 @@
 
   </div>
 
-  <div class="column justify-content-center">
+  <div id="user-liked-cafes" class="column justify-content-center">
     {% if g.user.liked_cafes %}
     <ul>
       {% for cafe in g.user.liked_cafes %}
-      <li>You like {{ cafe.name }}</li>
+      <li>You like {{ cafe.name }} at
+        {{ cafe.address }}, {{ cafe.get_city_state() }}
+      </li>
       {% endfor %}
     </ul>
       {% else %}

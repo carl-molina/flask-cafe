@@ -39,7 +39,7 @@ class AddEditCafeForm(FlaskForm):
 
 
 class SignupForm(FlaskForm):
-    """Form for registering/adding new users."""
+    """Form for registering/adding new user."""
 
     username = StringField(
         "Username",

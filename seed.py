@@ -1,8 +1,14 @@
 """Initial data."""
 
-from models import City, Cafe, db, User
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
+from models import City, Cafe, db, User
 from app import app
+
+
+ADMIN = os.environ['ADMIN_PW']
 
 db.drop_all()
 db.create_all()
@@ -65,7 +71,7 @@ ua = User.register(
     last_name="MacAdmin",
     description="I am the very model of the modern model administrator.",
     email="admin@test.com",
-    password="secret",
+    password=ADMIN,
     admin=True,
 )
 

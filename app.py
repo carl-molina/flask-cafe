@@ -29,6 +29,17 @@ connect_db(app)
 
 
 #######################################
+# 404 error route
+
+
+@app.errorhandler(404)
+def not_found(e):
+    """Custom 404 page when user visits an incorrect URL."""
+
+    return render_template('404.html')
+
+
+#######################################
 # auth & auth routes
 
 
@@ -38,7 +49,9 @@ NOT_LOGGED_IN_MSG = "You are not logged in."
 
 @app.before_request
 def add_user_to_g():
-    """If we're logged in, add curr user to Flask global."""
+    """If we're logged in, add curr user instance to Flask global using
+    user.id.
+    """
 
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
@@ -75,11 +88,11 @@ def do_logout():
 def homepage():
     """Show homepage."""
 
-    return render_template("homepage.html")
+    return render_template('homepage.html')
 
 
 #######################################
-# user signup/login/logout
+# user signup/login/logout routes
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -208,7 +221,7 @@ def edit_profile():
 
 
 #######################################
-# cafes
+# cafes routes
 
 
 @app.get('/cafes')
@@ -218,7 +231,7 @@ def cafe_list():
     cafes = Cafe.query.order_by('name').all()
 
     return render_template(
-        'cafe/list.html',
+        '/cafe/list.html',
         cafes=cafes,
     )
 
@@ -316,6 +329,7 @@ def edit_cafe(cafe_id):
             return render_template('/cafe/edit-form.html', form=form, cafe=cafe)
 
         flash(f'{cafe.name} edited.')
+        cafe.save_map()
         return redirect(url_for('cafe_detail', cafe_id=cafe_id))
 
     else:
@@ -323,7 +337,7 @@ def edit_cafe(cafe_id):
 
 
 #######################################
-# likes
+# likes routes
 
 
 @app.get('/api/likes')

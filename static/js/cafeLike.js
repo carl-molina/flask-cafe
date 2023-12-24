@@ -5,10 +5,10 @@ const BASE_URL_LIKE = '/api/like';
 const BASE_URL_UNLIKE = '/api/unlike';
 
 
-/** processLikeForm: handle submission of liking/unliking a cafe:
+/** processLikeForm: handle submission of liking a cafe:
  *
- *  - make API call to server with JSON of liked cafe {"cafe_id": 1}
- *  - make current user like cafe #1 and return JSON {"liked": 1}
+ *  - makes API call to server with JSON of cafe id {"cafe_id": 1}
+ *  - makes current user like cafe and receives JSON response {"liked": 1}
  */
 
 async function processLikeForm(evt) {
@@ -41,6 +41,13 @@ async function processLikeForm(evt) {
 
 $("#like").on("click", processLikeForm);
 
+
+/** processUnlikeForm: handle submission of unliking a cafe:
+ *
+ *  - makes API call to server with JSON of cafe id {"cafe_id": 1}
+ *  - makes current user unlike cafe and receives JSON response {"unliked": 1}
+ */
+
 async function processUnlikeForm(evt) {
   console.debug('processUnlikeForm ran!');
   evt.preventDefault();
@@ -71,6 +78,13 @@ async function processUnlikeForm(evt) {
 
 $("#unlike").on("click", processUnlikeForm);
 
+
+/** processLikes: IIFE that checks whether user currently likes specific cafe
+ *
+ *  Given cafe_id in the URL query string, figures out if the current user likes
+ *  that cafe; receives JSON response {"likes": true|false}
+ */
+
 $(async function processLikes() {
   console.debug('processLikes ran!');
 
@@ -88,10 +102,10 @@ $(async function processLikes() {
   } else {
     if (likesData.likes) {
       $("#like").hide();
-      $("#unlike").show()
+      $("#unlike").show();
     } else {
       $("#like").show();
-      $("#unlike").hide()
+      $("#unlike").hide();
     }
   }
 });

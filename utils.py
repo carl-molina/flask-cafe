@@ -8,4 +8,3 @@ def get_cities():
 
     cities = [(c.code, c.name) for c in City.query.all()]
     return cities
-

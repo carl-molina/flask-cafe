@@ -3,14 +3,14 @@
 
 import os
 
-os.environ["DATABASE_URL"] = "postgresql:///flaskcafe_test"
+os.environ["DATABASE_URL"] = "postgresql:///flask_cafe_test"
 
 import re
 from unittest import TestCase
 
 from flask import session
 from app import app, CURR_USER_KEY
-from models import db, Cafe, City, connect_db, User, Like
+from models import db, Cafe, City, User, Like
 from sqlalchemy.exc import IntegrityError
 
 # Make Flask errors be real errors, rather than HTML pages with error info
@@ -163,9 +163,6 @@ class CityModelTestCase(TestCase):
         Cafe.query.delete()
         City.query.delete()
         db.session.commit()
-
-    # depending on how you solve exercise, you may have things to test on
-    # the City model, so here's a good place to put that stuff.
 
     def test_city_sf(self):
         """Tests for City Model on sf city instance."""
@@ -896,7 +893,7 @@ class LikeViewsTestCase(TestCase):
             self.assertEqual(resp.json, {"error": "Not logged in"})
 
     def test_user_handle_unlike(self):
-        """Tests for logged-in user liking a cafe."""
+        """Tests for logged-in user unliking a cafe."""
 
         with app.test_client() as client:
             login_for_test(client, self.user1_id)

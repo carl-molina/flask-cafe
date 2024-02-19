@@ -1,6 +1,6 @@
 # Flask Cafe
 
-Flask Cafe is an cafe list site that lets users browse cafes, like and unlike cafes, and see more cafe details. Admin users can add and edit cafes. This project was originally built in Dec 2023 at [Rithm School](https://www.rithmschool.com/).
+Flask Cafe is a cafe list site that lets users browse cafes, like and unlike cafes, and see more cafe details including map data from Mapquest API. Admin users can add and edit cafes. This project was originally built in Dec 2023 at [Rithm School](https://www.rithmschool.com/).
 
 ## Demo
 

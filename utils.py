@@ -2,7 +2,6 @@
 
 from models import City
 
-
 def get_cities():
     """Get cities for SelectField on forms that add/edit a cafe."""
 

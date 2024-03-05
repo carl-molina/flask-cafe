@@ -1,6 +1,5 @@
 """Tests for Flask Cafe."""
 
-
 import os
 
 os.environ["DATABASE_URL"] = "postgresql:///flask_cafe_test"
